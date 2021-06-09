@@ -119,7 +119,9 @@ static Class ImageManagerClass = nil;
     if (_delegate && [_delegate respondsToSelector:@selector(ks_photoBrowser:didSelectItem:atIndex:)]) {
         [_delegate ks_photoBrowser:self didSelectItem:item atIndex:_currentPage];
     }
-    
+    if (_delegate && [_delegate respondsToSelector:@selector(ks_photoBrowser:didSelectItem:atIndex:totalCount:)]) {
+        [_delegate ks_photoBrowser:self didSelectItem:item atIndex:_currentPage totalCount:self.photoItems.count];
+    }
     KSPhotoView *photoView = [self photoViewForPage:_currentPage];
     photoView.imageView.image = item.thumbImage;
     [photoView resizeImageView];
@@ -332,6 +334,9 @@ static Class ImageManagerClass = nil;
         }
         if (_delegate && [_delegate respondsToSelector:@selector(ks_photoBrowser:didSelectItem:atIndex:)]) {
             [_delegate ks_photoBrowser:self didSelectItem:item atIndex:page];
+        }
+        if (_delegate && [_delegate respondsToSelector:@selector(ks_photoBrowser:didSelectItem:atIndex:totalCount:)]) {
+            [_delegate ks_photoBrowser:self didSelectItem:item atIndex:page totalCount:self.photoItems.count];
         }
     }
 }
