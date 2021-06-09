@@ -26,6 +26,7 @@ typedef NS_ENUM(NSUInteger, KSPhotoBrowserBackgroundStyle) {
 };
 
 typedef NS_ENUM(NSUInteger, KSPhotoBrowserPageIndicatorStyle) {
+    KSPhotoBrowserPageIndicatorStyleNone,
     KSPhotoBrowserPageIndicatorStyleDot,
     KSPhotoBrowserPageIndicatorStyleText
 };
@@ -46,12 +47,18 @@ typedef NS_ENUM(NSUInteger, KSPhotoBrowserImageLoadingStyle) {
 @property (nonatomic, weak) id<KSPhotoBrowserDelegate> delegate;
 @property (class, nonatomic, strong) Class<KSImageManager> imageManagerClass;
 @property (class, nonatomic, strong) UIColor *imageViewBackgroundColor;
+@property (nonatomic, assign) BOOL userPushJump;
 
 + (instancetype)browserWithPhotoItems:(NSArray<KSPhotoItem *> *)photoItems selectedIndex:(NSUInteger)selectedIndex;
 - (instancetype)initWithPhotoItems:(NSArray<KSPhotoItem *> *)photoItems selectedIndex:(NSUInteger)selectedIndex;
 - (void)showFromViewController:(UIViewController *)vc;
 - (UIImage *)imageForItem:(KSPhotoItem *)item;
 - (UIImage *)imageAtIndex:(NSUInteger)index;
+
+
+/// MARK: - Override Methods
+- (void)showDismissalAnimation;
+- (void)configSubviews;
 
 @end
 
@@ -60,7 +67,7 @@ typedef NS_ENUM(NSUInteger, KSPhotoBrowserImageLoadingStyle) {
 @optional
 - (void)ks_photoBrowser:(KSPhotoBrowser *)browser didSelectItem:(KSPhotoItem *)item atIndex:(NSUInteger)index;
 
-- (void)ks_photoBrowser:(KSPhotoBrowser *)browser didSelectItem:(KSPhotoItem *)item atIndex:(NSUInteger)index totalCount:(NSUInteger)totalCount;
+- (void)ks_photoBrowser:(KSPhotoBrowser *)browser didScrollToIndex:(NSUInteger)index totalCount:(NSUInteger)totalCount;
 
 // If you do not implement this method, there will be a default implementation which will call the system share sheet `UIActivityViewController`
 - (void)ks_photoBrowser:(KSPhotoBrowser *)browser didLongPressItem:(KSPhotoItem *)item atIndex:(NSUInteger)index;

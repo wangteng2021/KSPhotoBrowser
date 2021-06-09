@@ -11,6 +11,8 @@
 #import "UIImage+KS.h"
 #import "KSSDImageManager.h"
 
+/// 全屏侧滑手势响应最小距离
+#define kFullscreenPopGestureIgnoreTheOffset 45
 static const NSTimeInterval kAnimationDuration = 0.33;
 static const NSTimeInterval kSpringAnimationDuration = 0.5;
 static const CGFloat kPageControlHeight = 20;
@@ -18,9 +20,13 @@ static const CGFloat kPageControlBottomSpacing = 40;
 
 static Class ImageManagerClass = nil;
 
+@interface KSScrollView : UIScrollView <UIGestureRecognizerDelegate>
+
+@end
+
 @interface KSPhotoBrowser () <UIScrollViewDelegate, UIViewControllerTransitioningDelegate, CAAnimationDelegate>
 
-@property (nonatomic, strong) UIScrollView *scrollView;
+@property (nonatomic, strong) KSScrollView *scrollView;
 @property (nonatomic, strong) NSMutableArray *photoItems;
 @property (nonatomic, strong) NSMutableSet *reusableItemViews;
 @property (nonatomic, strong) NSMutableArray *visibleItemViews;
@@ -85,10 +91,11 @@ static Class ImageManagerClass = nil;
     self.backgroundView.alpha = 0;
     [self.view addSubview:self.backgroundView];
     
-    _scrollView = [[UIScrollView alloc] init];
+    _scrollView = [[KSScrollView alloc] init];
     _scrollView.pagingEnabled = YES;
     _scrollView.showsHorizontalScrollIndicator = NO;
     _scrollView.delegate = self;
+    _scrollView.bounces = NO;
     [self.view addSubview:_scrollView];
     
     if (_pageindicatorStyle == KSPhotoBrowserPageIndicatorStyleDot) {
@@ -98,7 +105,7 @@ static Class ImageManagerClass = nil;
             _pageControl.currentPage = _currentPage;
             [self.view addSubview:_pageControl];
         }
-    } else {
+    } else if (_pageindicatorStyle == KSPhotoBrowserPageIndicatorStyleText) {
         _pageLabel = [[UILabel alloc] init];
         _pageLabel.textColor = [UIColor whiteColor];
         _pageLabel.font = [UIFont systemFontOfSize:16];
@@ -107,6 +114,11 @@ static Class ImageManagerClass = nil;
         [self.view addSubview:_pageLabel];
     }
     
+    [self configSubviews];
+    
+    if (_delegate && [_delegate respondsToSelector:@selector(ks_photoBrowser:didScrollToIndex:totalCount:)]) {
+        [_delegate ks_photoBrowser:self didScrollToIndex:_currentPage totalCount:self.photoItems.count];
+    }
     [self setupFrames];
     
     [self addGestureRecognizer];
@@ -119,9 +131,6 @@ static Class ImageManagerClass = nil;
     if (_delegate && [_delegate respondsToSelector:@selector(ks_photoBrowser:didSelectItem:atIndex:)]) {
         [_delegate ks_photoBrowser:self didSelectItem:item atIndex:_currentPage];
     }
-    if (_delegate && [_delegate respondsToSelector:@selector(ks_photoBrowser:didSelectItem:atIndex:totalCount:)]) {
-        [_delegate ks_photoBrowser:self didSelectItem:item atIndex:_currentPage totalCount:self.photoItems.count];
-    }
     KSPhotoView *photoView = [self photoViewForPage:_currentPage];
     photoView.imageView.image = item.thumbImage;
     [photoView resizeImageView];
@@ -130,6 +139,14 @@ static Class ImageManagerClass = nil;
         [self blurBackgroundWithImage:[self screenshot] animated:NO];
     } else if (_backgroundStyle == KSPhotoBrowserBackgroundStyleBlurPhoto) {
         [self blurBackgroundWithImage:item.thumbImage animated:NO];
+    }
+    
+    if (self.userPushJump) {
+        
+        [self configPhotoView:photoView withItem:item];
+        self.presented = YES;
+//        [self setStatusBarHidden:YES];
+        return;
     }
     
     if (item.sourceView == nil) {
@@ -206,6 +223,10 @@ static Class ImageManagerClass = nil;
     
 }
 
+- (void)configSubviews {
+    
+}
+
 // MARK: - Public
 
 - (void)showFromViewController:(UIViewController *)vc {
@@ -253,12 +274,12 @@ static Class ImageManagerClass = nil;
 }
 
 - (void)setStatusBarHidden:(BOOL)hidden {
-    UIWindow *window = [UIApplication sharedApplication].keyWindow;
-    if (hidden) {
-        window.windowLevel = UIWindowLevelStatusBar + 1;
-    } else {
-        window.windowLevel = UIWindowLevelNormal;
-    }
+//    UIWindow *window = [UIApplication sharedApplication].keyWindow;
+//    if (hidden) {
+//        window.windowLevel = UIWindowLevelStatusBar + 1;
+//    } else {
+//        window.windowLevel = UIWindowLevelNormal;
+//    }
 }
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
@@ -329,14 +350,14 @@ static Class ImageManagerClass = nil;
         _currentPage = page;
         if (_pageindicatorStyle == KSPhotoBrowserPageIndicatorStyleDot) {
             _pageControl.currentPage = page;
-        } else {
+        } else if (_pageindicatorStyle == KSPhotoBrowserPageIndicatorStyleText) {
             [self configPageLabelWithPage:_currentPage];
         }
         if (_delegate && [_delegate respondsToSelector:@selector(ks_photoBrowser:didSelectItem:atIndex:)]) {
             [_delegate ks_photoBrowser:self didSelectItem:item atIndex:page];
         }
-        if (_delegate && [_delegate respondsToSelector:@selector(ks_photoBrowser:didSelectItem:atIndex:totalCount:)]) {
-            [_delegate ks_photoBrowser:self didSelectItem:item atIndex:page totalCount:self.photoItems.count];
+        if (_delegate && [_delegate respondsToSelector:@selector(ks_photoBrowser:didScrollToIndex:totalCount:)]) {
+            [_delegate ks_photoBrowser:self didScrollToIndex:page totalCount:self.photoItems.count];
         }
     }
 }
@@ -353,7 +374,11 @@ static Class ImageManagerClass = nil;
     } else {
         item.sourceView.alpha = 1;
     }
-    [self dismissViewControllerAnimated:NO completion:nil];
+    if (self.userPushJump) {
+        [self.navigationController popViewControllerAnimated:YES];
+    } else {
+        [self dismissViewControllerAnimated:NO completion:nil];
+    }
 }
 
 - (void)performRotationWithPan:(UIPanGestureRecognizer *)pan {
@@ -423,8 +448,6 @@ static Class ImageManagerClass = nil;
             
             CGFloat rateY = (_startLocation.y - self.startFrame.origin.y) / self.startFrame.size.height;
             CGFloat y = location.y - height * rateY;
-            
-            NSLog(@"%f", rateY);
             
             photoView.imageView.frame = CGRectMake(x, y, width, height);
             
@@ -540,8 +563,10 @@ static Class ImageManagerClass = nil;
     UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(didLongPress:)];
     [self.view addGestureRecognizer:longPress];
     
-    UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(didPan:)];
-    [self.view addGestureRecognizer:pan];
+    if (!self.userPushJump) {
+        UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(didPan:)];
+        [self.view addGestureRecognizer:pan];
+    }
 }
 
 - (void)didSingleTap:(UITapGestureRecognizer *)tap {
@@ -696,10 +721,17 @@ static Class ImageManagerClass = nil;
 }
 
 - (void)showDismissalAnimation {
+    
     KSPhotoItem *item = [_photoItems objectAtIndex:_currentPage];
     KSPhotoView *photoView = [self photoViewForPage:_currentPage];
     [photoView cancelCurrentImageLoad];
     [self setStatusBarHidden:NO];
+    
+    
+    if (self.userPushJump) {
+        [self dismissAnimated:NO];
+        return;
+    }
     
     if (item.sourceView == nil) {
         [UIView animateWithDuration:kAnimationDuration animations:^{
@@ -807,6 +839,56 @@ static Class ImageManagerClass = nil;
 
 + (UIColor *)imageViewBackgroundColor {
     return KSPhotoView.backgroundColor;
+}
+
+@end
+
+
+@implementation KSScrollView
+
+/// MARK: - UIGestureRecognizerDelegate
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+    
+    if (self.contentOffset.x <= 0) {
+        
+        if ([otherGestureRecognizer.delegate isKindOfClass:NSClassFromString(@"_FDFullscreenPopGestureRecognizerDelegate")]) {
+            return YES;
+        }
+    }
+    
+    if (gestureRecognizer == self.panGestureRecognizer) {
+        
+        UIPanGestureRecognizer *pan = (UIPanGestureRecognizer *)self.panGestureRecognizer;
+        
+        CGPoint point = [pan locationInView:self];
+        NSInteger touchX = (NSInteger)ceil(point.x) % (NSInteger)self.frame.size.width;
+        if (touchX < kFullscreenPopGestureIgnoreTheOffset) {
+            
+            if ([otherGestureRecognizer.delegate isKindOfClass:NSClassFromString(@"_FDFullscreenPopGestureRecognizerDelegate")]) {
+                return YES;
+            }
+        }
+    }
+    return NO;
+}
+
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
+    
+    if (self.contentOffset.x < 0) {
+        return NO;
+    }
+    if (gestureRecognizer == self.panGestureRecognizer) {
+        
+        UIPanGestureRecognizer *pan = (UIPanGestureRecognizer *)self.panGestureRecognizer;
+        
+        CGPoint point = [pan locationInView:self];
+        NSInteger touchX = (NSInteger)ceil(point.x) % (NSInteger)self.frame.size.width;
+        if (touchX < kFullscreenPopGestureIgnoreTheOffset) {
+            
+            return NO;
+        }
+    }
+    return YES;
 }
 
 @end
