@@ -29,6 +29,7 @@
 }
 
 + (void)setImageForImageView:(UIImageView *)imageView
+                        item:(KSPhotoItem *)item
                      withURL:(NSURL *)imageURL
                  placeholder:(UIImage *)placeholder
                     progress:(KSImageManagerProgressBlock)progress

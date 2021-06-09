@@ -86,7 +86,7 @@ static UIColor *BackgroundColor = nil;
         _progressLayer.hidden = NO;
         
         _imageView.image = item.thumbImage;
-        [KSPhotoBrowser.imageManagerClass setImageForImageView:_imageView withURL:item.imageUrl placeholder:item.thumbImage progress:progressBlock completion:^(UIImage *image, NSURL *url, BOOL finished, NSError *error) {
+        [KSPhotoBrowser.imageManagerClass setImageForImageView:_imageView item:item withURL:item.imageUrl placeholder:item.thumbImage progress:progressBlock completion:^(UIImage *image, NSURL *url, BOOL finished, NSError *error) {
             __strong typeof(wself) sself = wself;
             if (finished) {
                 [sself resizeImageView];

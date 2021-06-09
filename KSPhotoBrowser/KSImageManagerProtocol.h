@@ -8,6 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
+@class KSPhotoItem;
+
 typedef void (^KSImageManagerProgressBlock)(NSInteger receivedSize, NSInteger expectedSize);
 
 typedef void (^KSImageManagerCompletionBlock)(UIImage * _Nullable image, NSURL * _Nullable url, BOOL success, NSError * _Nullable error);
@@ -17,6 +19,7 @@ typedef void (^KSImageManagerCompletionBlock)(UIImage * _Nullable image, NSURL *
 + (Class _Nonnull)imageViewClass;
 
 + (void)setImageForImageView:(nullable UIImageView *)imageView
+                        item:(__kindof KSPhotoItem *)item
                      withURL:(nullable NSURL *)imageURL
                  placeholder:(nullable UIImage *)placeholder
                     progress:(nullable KSImageManagerProgressBlock)progress
