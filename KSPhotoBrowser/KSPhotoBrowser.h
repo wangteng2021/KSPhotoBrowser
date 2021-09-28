@@ -10,6 +10,8 @@
 #import "KSPhotoItem.h"
 #import "KSImageManagerProtocol.h"
 
+@class KSPhotoView;
+
 NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, KSPhotoBrowserInteractiveDismissalStyle) {
@@ -59,6 +61,8 @@ typedef NS_ENUM(NSUInteger, KSPhotoBrowserImageLoadingStyle) {
 - (UIImage *)imageAtIndex:(NSUInteger)index;
 - (void)removeItemAtIndex:(NSUInteger)index;
 
+- (KSPhotoView *)photoViewForPage:(NSUInteger)page;
+- (void)reloadItemWithIndex:(NSUInteger)index;
 
 /// MARK: - Override Methods
 - (void)showDismissalAnimation;

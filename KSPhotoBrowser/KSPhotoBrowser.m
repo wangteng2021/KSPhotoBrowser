@@ -306,6 +306,11 @@ static Class ImageManagerClass = nil;
     return nil;
 }
 
+- (void)reloadItemWithIndex:(NSUInteger)index {
+    KSPhotoView *photoView = [self photoViewForPage:index];
+    [self configPhotoView:photoView withItem:photoView.item];
+}
+
 - (KSPhotoView *)dequeueReusableItemView {
     KSPhotoView *photoView = [_reusableItemViews anyObject];
     if (photoView == nil) {
