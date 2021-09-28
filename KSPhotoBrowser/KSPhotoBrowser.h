@@ -39,6 +39,9 @@ typedef NS_ENUM(NSUInteger, KSPhotoBrowserImageLoadingStyle) {
 @protocol KSPhotoBrowserDelegate, KSImageManager;
 @interface KSPhotoBrowser : UIViewController
 
+@property (nonatomic, strong, readonly) NSMutableArray *photoItems;
+@property (nonatomic, assign, readonly) NSUInteger currentPage;
+
 @property (nonatomic, assign) KSPhotoBrowserInteractiveDismissalStyle dismissalStyle;
 @property (nonatomic, assign) KSPhotoBrowserBackgroundStyle backgroundStyle;
 @property (nonatomic, assign) KSPhotoBrowserPageIndicatorStyle pageindicatorStyle;
