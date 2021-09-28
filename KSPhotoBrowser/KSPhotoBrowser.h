@@ -54,6 +54,7 @@ typedef NS_ENUM(NSUInteger, KSPhotoBrowserImageLoadingStyle) {
 - (void)showFromViewController:(UIViewController *)vc;
 - (UIImage *)imageForItem:(KSPhotoItem *)item;
 - (UIImage *)imageAtIndex:(NSUInteger)index;
+- (void)removeItemAtIndex:(NSUInteger)index;
 
 
 /// MARK: - Override Methods

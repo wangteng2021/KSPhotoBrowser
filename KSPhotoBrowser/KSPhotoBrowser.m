@@ -242,6 +242,17 @@ static Class ImageManagerClass = nil;
     return [ImageManagerClass imageForURL:item.imageUrl];
 }
 
+- (void)removeItemAtIndex:(NSUInteger)index {
+    if (index > self.photoItems.count - 1) return;
+    [self.photoItems removeObjectAtIndex:index];
+    [self setupFrames];
+    [self updateReusableItemViews];
+    [self configItemViews];
+    if (_delegate && [_delegate respondsToSelector:@selector(ks_photoBrowser:didScrollToIndex:totalCount:)]) {
+        [_delegate ks_photoBrowser:self didScrollToIndex:_currentPage totalCount:self.photoItems.count];
+    }
+}
+
 // MARK: - Private
 
 - (void)setupFrames {
