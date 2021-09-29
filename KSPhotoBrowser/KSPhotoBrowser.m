@@ -244,6 +244,10 @@ static Class ImageManagerClass = nil;
 
 - (void)removeItemAtIndex:(NSUInteger)index {
     if (index > self.photoItems.count - 1) return;
+    for (KSPhotoView *view in _visibleItemViews) {
+        [view removeFromSuperview];
+    }
+    [_visibleItemViews removeAllObjects];
     [self.photoItems removeObjectAtIndex:index];
     [self setupFrames];
     [self updateReusableItemViews];
