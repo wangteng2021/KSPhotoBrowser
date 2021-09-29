@@ -89,6 +89,7 @@ static UIColor *BackgroundColor = nil;
         [KSPhotoBrowser.imageManagerClass setImageForImageView:_imageView item:item withURL:item.imageUrl placeholder:item.thumbImage progress:progressBlock completion:^(UIImage *image, NSURL *url, BOOL finished, NSError *error) {
             __strong typeof(wself) sself = wself;
             if (finished) {
+                sself.imageView.image = image;
                 [sself resizeImageView];
             }
             [sself.progressLayer stopSpin];
