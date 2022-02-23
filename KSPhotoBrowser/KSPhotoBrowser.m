@@ -590,7 +590,12 @@ static Class ImageManagerClass = nil;
 }
 
 - (void)didSingleTap:(UITapGestureRecognizer *)tap {
-    [self showDismissalAnimation];
+    
+    if (_delegate && [_delegate respondsToSelector:@selector(ha_photoBrowser:didSingleItem:aiIndex:)]) {
+        [_delegate ha_photoBrowser:self didSingleItem:_photoItems[_currentPage] aiIndex:_currentPage];
+    } else {
+        [self showDismissalAnimation];
+    }
 }
 
 - (void)didDoubleTap:(UITapGestureRecognizer *)tap {

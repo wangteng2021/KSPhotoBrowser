@@ -80,6 +80,7 @@ typedef NS_ENUM(NSUInteger, KSPhotoBrowserImageLoadingStyle) {
 // If you do not implement this method, there will be a default implementation which will call the system share sheet `UIActivityViewController`
 - (void)ks_photoBrowser:(KSPhotoBrowser *)browser didLongPressItem:(KSPhotoItem *)item atIndex:(NSUInteger)index;
 
+- (void)ha_photoBrowser:(KSPhotoBrowser *)browser didSingleItem:(KSPhotoItem *)item aiIndex:(NSUInteger)index;
 @end
 
 NS_ASSUME_NONNULL_END
