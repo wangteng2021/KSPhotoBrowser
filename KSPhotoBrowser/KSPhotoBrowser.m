@@ -126,7 +126,7 @@ static Class ImageManagerClass = nil;
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-   
+    
     KSPhotoItem *item = [_photoItems objectAtIndex:_currentPage];
     if (_delegate && [_delegate respondsToSelector:@selector(ks_photoBrowser:didSelectItem:atIndex:)]) {
         [_delegate ks_photoBrowser:self didSelectItem:item atIndex:_currentPage];
@@ -145,7 +145,7 @@ static Class ImageManagerClass = nil;
         
         [self configPhotoView:photoView withItem:item];
         self.presented = YES;
-//        [self setStatusBarHidden:YES];
+        //        [self setStatusBarHidden:YES];
         return;
     }
     
@@ -289,12 +289,12 @@ static Class ImageManagerClass = nil;
 }
 
 - (void)setStatusBarHidden:(BOOL)hidden {
-//    UIWindow *window = [UIApplication sharedApplication].keyWindow;
-//    if (hidden) {
-//        window.windowLevel = UIWindowLevelStatusBar + 1;
-//    } else {
-//        window.windowLevel = UIWindowLevelNormal;
-//    }
+    //    UIWindow *window = [UIApplication sharedApplication].keyWindow;
+    //    if (hidden) {
+    //        window.windowLevel = UIWindowLevelStatusBar + 1;
+    //    } else {
+    //        window.windowLevel = UIWindowLevelNormal;
+    //    }
 }
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
@@ -583,10 +583,10 @@ static Class ImageManagerClass = nil;
     UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(didLongPress:)];
     [self.view addGestureRecognizer:longPress];
     
-    if (!self.userPushJump) {
-        UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(didPan:)];
-        [self.view addGestureRecognizer:pan];
-    }
+    //    if (!self.userPushJump) {
+    UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(didPan:)];
+    [self.view addGestureRecognizer:pan];
+    //    }
 }
 
 - (void)didSingleTap:(UITapGestureRecognizer *)tap {
